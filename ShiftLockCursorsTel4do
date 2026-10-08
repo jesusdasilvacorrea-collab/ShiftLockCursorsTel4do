@@ -1,0 +1,192 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local GuiService = game:GetService("GuiService")
+
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "CursorMenu"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local cursors = {
+	{"White","rbxassetid://131843855435385"},
+	{"Purple","rbxassetid://105227484929270"},
+	{"Dark Red","rbxassetid://70807381747714"},
+	{"Black","rbxassetid://134411152875782"},
+	{"Pink","rbxassetid://101446374921049"},
+	{"Blue","rbxassetid://94640444703376"},
+	{"Green","rbxassetid://112063814299010"},
+	{"Teal","rbxassetid://105472303240225"},
+	{"Hot Pink","rbxassetid://120423063723029"},
+	{"Red","rbxassetid://93953005352303"},
+	{"Mocha","rbxassetid://123066282804999"},
+	{"Cinnamoroll","rbxassetid://130820173728340"},
+	{"Blue Diamond","rbxassetid://86867462006638"},
+	{"Red Diamond","rbxassetid://92104309771570"},
+	{"Red Star","rbxassetid://93839976680281"},
+	{"Orange","rbxassetid://132782590439670"},
+	{"Kuromi","rbxassetid://94422136876896"},
+	{"Hello Kitty","rbxassetid://124324922920553"},
+	{"Hello Kitty Bow","rbxassetid://120839586609926"},
+	{"Apple Jack","rbxassetid://105737560480211"}
+}
+
+--// BOTÓN MOVIBLE PARA ABRIR/CERRAR
+local openButton = Instance.new("ImageButton")
+openButton.Name = "CursorMenuButton"
+openButton.Size = UDim2.fromOffset(55,55)
+openButton.Position = UDim2.new(0,25,0.5,-27)
+openButton.BackgroundColor3 = Color3.fromRGB(90,40,110)
+openButton.Image = "rbxassetid://94422136876896"
+openButton.ScaleType = Enum.ScaleType.Fit
+openButton.Active = true
+openButton.Draggable = true
+openButton.Parent = gui
+
+Instance.new("UICorner",openButton).CornerRadius = UDim.new(1,0)
+
+local openStroke = Instance.new("UIStroke")
+openStroke.Color = Color3.fromRGB(220,100,160)
+openStroke.Thickness = 2
+openStroke.Parent = openButton
+
+--// PANEL
+local frame = Instance.new("Frame")
+frame.Size = UDim2.fromOffset(330,300)
+frame.Position = UDim2.new(0.5,-165,0.5,-150)
+frame.BackgroundColor3 = Color3.fromRGB(30,20,38)
+frame.Active = true
+frame.Draggable = true
+frame.Visible = false
+frame.Parent = gui
+
+Instance.new("UICorner",frame).CornerRadius = UDim.new(0,16)
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(220,100,160)
+stroke.Thickness = 2
+stroke.Parent = frame
+
+--// TÍTULO
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,-55,0,35)
+title.Position = UDim2.fromOffset(10,5)
+title.BackgroundTransparency = 1
+title.Text = "CUSTOM CURSORS"
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.TextSize = 15
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = frame
+
+--// BOTÓN X
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.fromOffset(28,28)
+closeButton.Position = UDim2.new(1,-36,0,7)
+closeButton.Text = "×"
+closeButton.TextSize = 20
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextColor3 = Color3.fromRGB(255,255,255)
+closeButton.BackgroundColor3 = Color3.fromRGB(180,50,120)
+closeButton.Parent = frame
+
+Instance.new("UICorner",closeButton).CornerRadius = UDim.new(1,0)
+
+--// SCROLL
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1,-20,1,-55)
+scroll.Position = UDim2.fromOffset(10,45)
+scroll.BackgroundColor3 = Color3.fromRGB(45,30,55)
+scroll.BorderSizePixel = 0
+scroll.ScrollBarThickness = 4
+scroll.CanvasSize = UDim2.new(0,0,0,0)
+scroll.Parent = frame
+
+Instance.new("UICorner",scroll).CornerRadius = UDim.new(0,10)
+
+local grid = Instance.new("UIGridLayout")
+grid.CellSize = UDim2.fromOffset(65,65)
+grid.CellPadding = UDim2.fromOffset(8,8)
+grid.HorizontalAlignment = Enum.HorizontalAlignment.Center
+grid.SortOrder = Enum.SortOrder.LayoutOrder
+grid.Parent = scroll
+
+grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	scroll.CanvasSize = UDim2.fromOffset(
+		0,
+		grid.AbsoluteContentSize.Y + 10
+	)
+end)
+
+--// CURSOR REAL
+local cursor = Instance.new("ImageLabel")
+cursor.Name = "CustomMouseCursor"
+cursor.Size = UDim2.fromOffset(32,32)
+cursor.AnchorPoint = Vector2.new(0.5,0.5)
+cursor.BackgroundTransparency = 1
+cursor.Visible = false
+cursor.Active = false
+cursor.ZIndex = 999999
+cursor.Parent = gui
+
+local enabled = true
+
+local function SetCursor(id)
+	cursor.Image = id
+
+	if enabled then
+		cursor.Visible = true
+		UserInputService.MouseIconEnabled = false
+	end
+end
+
+--// POSICIÓN CORREGIDA
+RunService.RenderStepped:Connect(function()
+	if cursor.Visible then
+		local mousePos = UserInputService:GetMouseLocation()
+		local inset = GuiService:GetGuiInset()
+
+		cursor.Position = UDim2.fromOffset(
+			mousePos.X - inset.X,
+			mousePos.Y - inset.Y
+		)
+	end
+end)
+
+--// ABRIR/CERRAR
+openButton.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+	frame.Visible = false
+end)
+
+--// CURSORES
+for _,data in ipairs(cursors) do
+	local name = data[1]
+	local id = data[2]
+
+	local button = Instance.new("ImageButton")
+	button.Name = name
+	button.BackgroundColor3 = Color3.fromRGB(90,40,110)
+	button.Image = id
+	button.ScaleType = Enum.ScaleType.Fit
+	button.Parent = scroll
+
+	Instance.new("UICorner",button).CornerRadius = UDim.new(0,10)
+
+	local buttonStroke = Instance.new("UIStroke")
+	buttonStroke.Color = Color3.fromRGB(180,50,120)
+	buttonStroke.Thickness = 1
+	buttonStroke.Parent = button
+
+	button.MouseButton1Click:Connect(function()
+		SetCursor(id)
+	end)
+end
+
+--// CURSOR INICIAL
+SetCursor(cursors[1][2])
